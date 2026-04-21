@@ -1,7 +1,14 @@
 [package]
 name = "moose-cli"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
+description = "CLI för SVT Plays livesändning av Den stora älgvandringen."
+license = "MIT"
+repository = "https://github.com/uherman/moose-cli"
+readme = "README.md"
+authors = ["uherman"]
+keywords = ["svt", "algvandringen", "mpv", "hls", "cli"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 anyhow = "1"

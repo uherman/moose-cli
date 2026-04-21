@@ -7,13 +7,21 @@ eget video-API och startar `mpv`.
 ## Krav
 
 - [`mpv`](https://mpv.io/) i `$PATH`.
-- Rust 1.64 eller senare (för `cargo build`).
 
-## Bygga
+## Installation
+
+Från crates.io:
 
 ```sh
-cargo build --release
-# binären hamnar i target/release/moose-cli
+cargo install moose-cli
+```
+
+Eller bygg från källan:
+
+```sh
+git clone https://github.com/uherman/moose-cli.git
+cd moose-cli
+cargo install --path .
 ```
 
 ## Användning
