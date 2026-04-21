@@ -1,0 +1,60 @@
+name: Publish to crates.io
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Read version from Cargo.toml
+        id: version
+        run: |
+          VERSION=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].version')
+          NAME=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].name')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "Cargo.toml has $NAME v$VERSION"
+
+      - name: Check if version is already published
+        id: check
+        run: |
+          NAME="${{ steps.version.outputs.name }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          PUBLISHED=$(curl -sSf "https://crates.io/api/v1/crates/$NAME" 2>/dev/null \
+            | jq -r --arg v "$VERSION" '.versions[]?.num | select(. == $v)' \
+            || true)
+          if [ -n "$PUBLISHED" ]; then
+            echo "v$VERSION is already on crates.io — skipping publish."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "v$VERSION is new — will publish."
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run tests
+        if: steps.check.outputs.should_publish == 'true'
+        run: cargo test --locked
+
+      - name: Publish to crates.io
+        if: steps.check.outputs.should_publish == 'true'
+        run: cargo publish --locked --token "$CARGO_REGISTRY_TOKEN"
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Tag the release
+        if: steps.check.outputs.should_publish == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
