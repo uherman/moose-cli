@@ -4,6 +4,8 @@ Liten Rust-CLI för att titta på SVT:s livesändning av *Den stora älgvandring
 — Hämtar stream-URL direkt från SVT:s
 eget video-API och startar `mpv`.
 
+![moose-cli](.assets/moose-cli.png)
+
 ## Krav
 
 - [`mpv`](https://mpv.io/) i `$PATH`.
